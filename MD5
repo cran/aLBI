@@ -1,7 +1,7 @@
-bd6879c1c7aa600afd38da7a763bda91 *DESCRIPTION
+d83ffc263beab9ed05464e6a88e3ad18 *DESCRIPTION
 495b22e406a0fa7dac7d196f6e296349 *NAMESPACE
 9ada70e5f0cc9572f2e18c76ada1558a *R/DataDescription.R
-bc1c1d9035e531ec7084c4c12740f7db *R/FishPar.R
+0f4b90c4b56a2ec4c46bf3bddc4440f5 *R/FishPar.R
 6ff4d0863c84b3a74cbeb7f2f0f4bdba *R/FishSS.R
 e07adc7bc55e4a8fddbcf360c7985199 *README.md
 b33827ee77eddfbeb2868fc6c60ef2f4 *build/vignette.rds
@@ -10,7 +10,7 @@ d232ac87abcc37e6765f5ed4e33696c4 *data/lenfreq01.rda
 3e1383aae1ef11812de4162d783c60bd *data/lenfreq02.rda
 41fc783b0898e43a34c4169bbf5da626 *inst/doc/Introduction.R
 ca9d59d15aa62a8b63d1e2b65668065a *inst/doc/Introduction.Rmd
-2baa5c159ae5bd2bf82f00a0ca978145 *inst/doc/Introduction.html
+84e778d366f21b198dff2172fe3d7b06 *inst/doc/Introduction.html
 1cca9e4a9e0d72ca7fe84a6bc7d5135a *inst/docs/404.html
 a3b8c5ca61e710e975953d042e8d21fe *inst/docs/Introduction.html
 dc163394a2294f1261603c349c537222 *inst/docs/articles/index.html
