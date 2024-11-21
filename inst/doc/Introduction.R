@@ -60,7 +60,7 @@ print(lenght_data)  # check the
 
 ## ----FrequencyTable_Output----------------------------------------------------
 # Running the FrequencyTable function
-freqTable <- FrequencyTable(data = lenght_data, bin_width = NULL)
+freqTable <- FrequencyTable(data = lenght_data, bin_width = NULL, Lmax = NULL)
 
 # Viewing the results
 freqTable$lfqTable  # Display the frequency table

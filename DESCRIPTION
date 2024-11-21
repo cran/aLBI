@@ -1,7 +1,7 @@
 Package: aLBI
 Type: Package
 Title: Estimating Length-Based Indicators for Fish Stock
-Version: 0.1.6
+Version: 0.1.7
 Authors@R: c(
     person("Ataher", "Ali", email = "ataher.cu.ms@gmail.com", role = c("aut", "cre")),
     person("Mohammed Shahidul", "Alam", email = "alamms@cu.ac.bd", role = "aut"))
@@ -22,8 +22,8 @@ BugReports: https://github.com/Ataher76/aLBI/issues
 RoxygenNote: 7.3.1
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2024-11-13 14:19:09 UTC; User
+Packaged: 2024-11-19 17:48:20 UTC; User
 Author: Ataher Ali [aut, cre],
   Mohammed Shahidul Alam [aut]
 Repository: CRAN
-Date/Publication: 2024-11-13 17:30:02 UTC
+Date/Publication: 2024-11-21 08:50:05 UTC
