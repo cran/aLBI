@@ -7,6 +7,15 @@ knitr::opts_chunk$set(
 
 options(repos = c(CRAN = "https://cran.rstudio.com"))
 
+# Load the aLBI package (required for vignette to access functions)
+library(aLBI)
+
+# Suppress warnings during vignette build for cleaner output
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(readxl))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(stats))
+
 ## ----installing_package-------------------------------------------------------
 # You can install the package using the following commands in your R session:
 # Install devtools if you haven't already
@@ -15,6 +24,10 @@ options(repos = c(CRAN = "https://cran.rstudio.com"))
 # install.packages("dplyr")
 # # Install readxl if you haven't already
 # install.packages("readxl")
+# Install ggplot2 if you haven't already
+# install.packages("ggplot2")
+# Install openxlsx if you haven't already
+# install.packages("openxlsx")
 # install aLBI package from CRAN
 # install.packages("aLBI")
 # Install the most updated version of aLBI package from GitHub
@@ -24,7 +37,7 @@ options(repos = c(CRAN = "https://cran.rstudio.com"))
 ## ----package_management-------------------------------------------------------
 # Check if required packages are installed and load them
 # Check if required packages are installed and load them
-required_packages <- c("aLBI", "readxl", "dplyr", "devtools")
+required_packages <- c("aLBI", "readxl", "openxlsx", "dplyr", "devtools", "ggplot2")
 
 for (pkg in required_packages) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
@@ -39,6 +52,8 @@ for (pkg in required_packages) {
 library(aLBI)
 library(readxl)
 library(dplyr)
+library(ggplot2)
+library(openxlsx)
 library(devtools)
 
 ## ----data_preparation---------------------------------------------------------
@@ -60,7 +75,7 @@ print(lenght_data)  # check the
 
 ## ----FrequencyTable_Output----------------------------------------------------
 # Running the FrequencyTable function
-freqTable <- FrequencyTable(data = lenght_data, bin_width = NULL, Lmax = NULL)
+freqTable <- FrequencyTable(data = lenght_data, bin_width = NULL, Lmax = NULL, output_file = "FrequencyTable_Output.xlsx")
 
 # Viewing the results
 freqTable$lfqTable  # Display the frequency table
@@ -84,13 +99,13 @@ print(lenfreq_data)  # check the data
 
 ## ----FishPar_Output-----------------------------------------------------------
 # Running the FishPar function
-results <- FishPar(data = lenfreq_data, resample = 1000, progress = FALSE)
+results <- FishPar(data = lenfreq_data, resample = 1000, progress = FALSE, Linf = NULL, Linf_sd = 0.5, Lmat = NULL, Lmat_sd = 0.5)
 
 # Viewing the results
 results$estimated_length_par
 results$estimated_froese_par
-results$estimated_freq_par
 results$forese_ind_vs_target
+results$Total_ind
 results$LM_ratio
 results$Pobj
 
@@ -116,5 +131,35 @@ stock_status <- FishSS(data = cpdata,
 
 # Viewing the stock status
 stock_status
+
+
+## ----LWR_Example--------------------------------------------------------------
+# Load the stock status criteria data
+LWdata_path <- system.file("exdata", "LWdata.xlsx", package = "aLBI")
+print(LWdata_path) #check if the path exist
+
+if (LWdata_path == "") {
+  stop("The required file LWdata.xlsx is missing. Please check the inst/extdata directory.")
+}
+# loading the cope and punt table
+LWdata <- readxl::read_excel(LWdata_path)
+print(LWdata)
+
+# Running the LWR function
+lwr_result <- LWR(data = LWdata,
+                log_transform = TRUE,
+                point_col = "black",
+                line_col = "red",
+                shade_col = "red",
+                point_size = 2,
+                line_size = 1,
+                alpha = 0.2,
+                main = "Length-Weight Relationship",
+                xlab = NULL,
+                ylab = NULL,
+                save_output = TRUE)
+
+# Viewing the stock status
+lwr_result
 
 

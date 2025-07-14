@@ -1,70 +1,76 @@
-#' Generate a Frequency Distribution Table for Fish Length Data
-#'
-#' @name FrequencyTable
-#' @description This function creates a frequency distribution table for fish length data, using
-#' either a custom bin width or Wang's formula to calculate the ideal bin width. If the calculated
-#' bin width is a fraction, it is rounded to the nearest integer.
-#'
-#' @param data A numeric vector or data frame containing fish length measurements. If a data frame is
-#' provided, the first numeric column will be selected.
-#' @param bin_width (Optional) A numeric value specifying the bin width for class intervals. If not
-#' provided, the bin width is automatically calculated using Wang's formula.
-#' @param Lmax (Optional) The maximum observed length of fish. Required only if the maximum length is not provided
-#' and bin width is calculated using Wang's formula.
+# Declare global variables at the top of the file
+utils::globalVariables(c("Length_Range", "Length", "Frequency"))
+
+#' @title FrequencyTable Generate a Frequency Distribution Table for Fish Length Data
+#' @description Creates a frequency distribution table for fish length data using either a custom bin width or Wang's formula for automatic bin width calculation. The bin width is rounded to the nearest integer if calculated. The results are saved to an Excel file and returned as a list of data frames.
+#' @param data A numeric vector or data frame containing fish length measurements. If a data frame is provided, the first numeric column is used.
+#' @param bin_width Numeric value specifying the bin width for class intervals. If NULL (default), bin width is calculated using Wang's formula.
+#' @param Lmax Numeric value for the maximum observed fish length. Required only if `bin_width` is NULL and Wang's formula is used. Defaults to NULL.
+#' @param output_file Character string specifying the output Excel file name. Defaults to "FrequencyTable_Output.xlsx".
 #'
 #' @return A list containing two data frames:
-#' \item{lfqTable}{A frequency table with the length range and frequency.}
-#' \item{lfreq}{A table with the upper limits of bins and their frequencies.}
+#' \describe{
+#'   \item{lfqTable}{Frequency table with length ranges and their frequencies.}
+#'   \item{lfreq}{Table with upper limits of bins and their frequencies.}
+#' }
 #'
 #' @examples
+#' # Load required package
+#' library(dplyr)
+#'
 #' # Generate random fish length data
 #' set.seed(123)
-#' fish_lengths <- data.frame(Length = runif(2000, min = 5, max = 70))
+#' fish_lengths <- runif(200, min = 5, max = 70)
 #'
-#' # Create a frequency table using Wang's formula (default)
-#' FrequencyTable(data = fish_lengths$Length)
+#' # Create frequency table with automatic bin width
+#' FrequencyTable(data = fish_lengths, output_file = tempfile(fileext = ".xlsx"))
 #'
-#' # Create a frequency table with a custom bin width
-#' FrequencyTable(data = fish_lengths$Length, bin_width = 5)
+#' # Create frequency table with custom bin width and output file
+#' FrequencyTable(data = fish_lengths, bin_width = 5, output_file = tempfile(fileext = ".xlsx"))
+#'
+#' @importFrom dplyr group_by summarise mutate select %>% n
+#' @importFrom openxlsx write.xlsx
+#' @importFrom stats na.omit
 #'
 #' @export
-#' @importFrom stats na.omit
-#' @importFrom dplyr %>% group_by summarise ungroup mutate
-utils::globalVariables(c("Length_Range", "Frequency", "Length"))
-
-FrequencyTable <- function(data, bin_width = NULL, Lmax = NULL) {
+#'
+FrequencyTable <- function(data, bin_width = NULL, Lmax = NULL, output_file = "FrequencyTable_Output.xlsx") {
   # Validate input
   if (!is.numeric(data) && !is.data.frame(data)) {
-    stop("Data must be a numeric vector or a data frame containing numeric values.")
+    stop("Input 'data' must be a numeric vector or a data frame with at least one numeric column.")
   }
 
-  # If data is a dataframe, select the first numeric column and omit NA values
+  # Extract numeric data if data frame
   if (is.data.frame(data)) {
     numeric_cols <- sapply(data, is.numeric)
     if (!any(numeric_cols)) {
-      stop("No numeric column found in the data frame.")
+      stop("No numeric columns found in the data frame.")
     }
-    data <- data[[which(numeric_cols)[1]]]  # Select the first numeric column
+    data <- data[[which(numeric_cols)[1]]]
   }
-  data <- stats::na.omit(data)  # Remove NA values
 
-  # Calculate the range
-  min_length <- min(data, na.rm = TRUE)
-  max_length <- max(data, na.rm = TRUE)
-  range_data <- max_length - min_length
+  # Remove NA values
+  data <- stats::na.omit(data)
+  if (length(data) == 0) {
+    stop("No valid (non-NA) data provided.")
+  }
 
-  # Determine bin width if not provided
+  # Calculate range
+  min_length <- min(data)
+  max_length <- max(data)
+
+  # Determine bin width
   if (is.null(bin_width)) {
     if (is.null(Lmax)) {
       Lmax <- max_length
-      message("Lmax not provided. Using maximum observed length: ", Lmax)
+      message("Lmax not provided. Using maximum observed length: ", round(Lmax, 2))
     }
-    actual_bin_width <- (0.23 * (Lmax^0.6))  # Calculate bin width using Wang's formula
-    rounded_bin_width <- ifelse(actual_bin_width %% 1 < 0.5, floor(actual_bin_width), ceiling(actual_bin_width))  # Round to nearest integer
-    message("Calculated actual bin width using Wang's formula: ", round(actual_bin_width, 2),
-            ", and the nearest round bin width: ", rounded_bin_width)
-    bin_width <- rounded_bin_width  # Use the rounded value for binning
+    bin_width <- round(0.23 * (Lmax^0.6))  # Wang's formula, rounded to nearest integer
+    message("Calculated bin width using Wang's formula: ", bin_width)
   } else {
+    if (!is.numeric(bin_width) || bin_width <= 0) {
+      stop("bin_width must be a positive numeric value.")
+    }
     message("Using custom bin width: ", bin_width)
   }
 
@@ -72,23 +78,39 @@ FrequencyTable <- function(data, bin_width = NULL, Lmax = NULL) {
   breaks <- seq(floor(min_length), ceiling(max_length) + bin_width, by = bin_width)
 
   # Create frequency table
-  freq_table <- data.frame(
-    Length_Range = cut(data, breaks = breaks, include.lowest = TRUE, right = FALSE),
-    Frequency = 1
+  lfqTable <- data.frame(
+    Length_Range = cut(data, breaks = breaks, include.lowest = TRUE, right = FALSE)
   ) %>%
     dplyr::group_by(Length_Range) %>%
-    dplyr::summarise(Frequency = sum(Frequency), .groups = "drop")
+    dplyr::summarise(Frequency = dplyr::n(), .groups = "drop")
 
-  # Extract upper limit from each bin
-  lfreq <- freq_table %>%
+  # Extract upper limits for lfreq table
+  lfreq <- lfqTable %>%
     dplyr::mutate(
-      Length = as.numeric(sapply(strsplit(as.character(Length_Range), ","), function(x) {
-        gsub("[^0-9.]", "", x[2])  # Extract upper limit
-      }))
+      Length = as.numeric(sub(".*,(\\d+\\.?\\d*)[\\)\\]]?$", "\\1", as.character(Length_Range)))
     ) %>%
     dplyr::select(Length, Frequency)
 
-  # Return the results as a list
-  output <- list(lfqTable = freq_table, lfreq = lfreq)
-  return(output)
+  # Check for NA values in Length and handle them
+  if (any(is.na(lfreq$Length))) {
+    warning("Some Length values could not be extracted. Attempting fallback extraction.")
+    lfreq$Length <- sapply(as.character(lfqTable$Length_Range), function(x) {
+      # Extract the number after the comma
+      num <- regmatches(x, regexec(".*,(\\d+\\.?\\d*)", x))[[1]][2]
+      if (is.na(num)) {
+        # Fallback: extract the last number in the string
+        num <- regmatches(x, regexec("(\\d+\\.?\\d*)$", x))[[1]][1]
+      }
+      as.numeric(num)
+    })
+  }
+
+  # Save to Excel
+  if (file.exists(output_file)) {
+    warning("Overwriting existing file: ", output_file)
+  }
+  openxlsx::write.xlsx(list(lfqTable = lfqTable, lfreq = lfreq), file = output_file, rowNames = FALSE)
+
+  # Return results
+  return(list(lfqTable = lfqTable, lfreq = lfreq))
 }
