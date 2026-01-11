@@ -15,6 +15,7 @@ suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(readxl))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(stats))
+suppressPackageStartupMessages(library(rlang))
 
 ## ----installing_package-------------------------------------------------------
 # You can install the package using the following commands in your R session:
@@ -28,6 +29,8 @@ suppressPackageStartupMessages(library(stats))
 # install.packages("ggplot2")
 # Install openxlsx if you haven't already
 # install.packages("openxlsx")
+# Install rlang if you haven't already
+# install.packages("rlang")
 # install aLBI package from CRAN
 # install.packages("aLBI")
 # Install the most updated version of aLBI package from GitHub
@@ -37,7 +40,7 @@ suppressPackageStartupMessages(library(stats))
 ## ----package_management-------------------------------------------------------
 # Check if required packages are installed and load them
 # Check if required packages are installed and load them
-required_packages <- c("aLBI", "readxl", "openxlsx", "dplyr", "devtools", "ggplot2")
+required_packages <- c("aLBI", "readxl", "openxlsx", "dplyr", "devtools", "ggplot2", "rlang")
 
 for (pkg in required_packages) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
@@ -54,9 +57,10 @@ library(readxl)
 library(dplyr)
 library(ggplot2)
 library(openxlsx)
+library(rlang)
 library(devtools)
 
-## ----data_preparation---------------------------------------------------------
+## ----data_preparation for FrequencyTable--------------------------------------
 library(readxl)
 # Load your length data from the system file
 lenfreq_path <- system.file("exdata", "ExData.xlsx", package = "aLBI")
@@ -80,6 +84,31 @@ freqTable <- FrequencyTable(data = lenght_data, bin_width = NULL, Lmax = NULL, o
 # Viewing the results
 freqTable$lfqTable  # Display the frequency table
 freqTable$lfreq     # Display the summarized frequencies with upper length ranges
+
+
+## ----data_preparation for FreqTM----------------------------------------------
+library(readxl)
+# Load your length data from the system file
+lenfreq_path <- system.file("exdata", "lenfreqM.xlsx", package = "aLBI")
+print(lenfreq_path)  # Check the generated path
+
+if (lenfreq_path == "") {
+  stop("The required file lenfreqM.xlsx is missing. Please check the inst/extdata directory.")
+}
+
+# load the length frequency data of multiple months
+lenght_dataM <- readxl::read_excel(lenfreq_path)
+print(lenght_dataM)  # check the 
+# replace with your data directory
+
+
+
+## ----FreqTM_Output------------------------------------------------------------
+# Running the FrequencyTable function
+freqTableM <- FreqTM(data = lenght_dataM, bin_width = NULL, Lmax = NULL, output_file = "FreqTM.xlsx")
+
+# Viewing the results
+freqTableM
 
 
 ## ----data_example-------------------------------------------------------------
@@ -125,9 +154,10 @@ print(cpdata)
 # Running the FishSS function
 stock_status <- FishSS(data = cpdata,
                        LM_ratio = results$LM_ratio,
-                       Pobj = results$Pobj,
                        Pmat = results$estimated_froese_par[1, 2],
-                       Popt = results$estimated_froese_par[2, 2])
+                       Popt = results$estimated_froese_par[2, 2],
+                       Pmega = results$estimated_froese_par[3,2]
+                       )
 
 # Viewing the stock status
 stock_status

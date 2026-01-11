@@ -68,7 +68,7 @@ FishPar <- function(data, resample = 1000, progress = FALSE, Linf = NULL, Linf_s
     warning("Dataset has fewer than 100 observation, which may lead to underestimate the lenght parameters and froese indicators.")
   }
 
-    max_freq <- max(data$Frequency)
+  max_freq <- max(data$Frequency)
   if (max_freq / sum(data$Frequency) > 0.8) {
     warning("A single Length value has more than 80% of total Frequency, which may reduce variability.")
   }
@@ -76,7 +76,9 @@ FishPar <- function(data, resample = 1000, progress = FALSE, Linf = NULL, Linf_s
   # Determine Lmax and Linf based on provided Linf
   if (!is.null(Linf)) {
     Linf_samples <- rep(Linf, resample) + rnorm(resample, mean = 0, sd = Linf_sd)
-    Lmax_samples <- Linf_samples / 0.95  # Generate Lmax_samples from Linf_samples
+    # Ensure Linf_samples stays within a plausible range (e.g., not too far below Linf)
+    Linf_samples <- pmax(Linf_samples, Linf * 0.9)  # Prevent excessive negative variation
+    Lmax_samples <- Linf_samples * 0.95  # Generate Lmax_samples from Linf_samples
     Lmax <- mean(Lmax_samples)  # Mean Lmax for reference
   } else {
     Lmax <- max(data$Length)
